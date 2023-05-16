@@ -1,48 +1,48 @@
-package dk.sdu.mmmi.cbse.playersystem;
+package dk.sdu.mmmi.cbse.enemysystem;
 
-import dk.sdu.mmmi.cbse.bulletsystem.BulletControlSystem;
 import dk.sdu.mmmi.cbse.common.data.Entity;
 import dk.sdu.mmmi.cbse.common.data.GameData;
-import static dk.sdu.mmmi.cbse.common.data.GameKeys.LEFT;
-import static dk.sdu.mmmi.cbse.common.data.GameKeys.RIGHT;
-import static dk.sdu.mmmi.cbse.common.data.GameKeys.UP;
-import dk.sdu.mmmi.cbse.common.data.GameKeys;
 import dk.sdu.mmmi.cbse.common.data.World;
 import dk.sdu.mmmi.cbse.common.data.entityparts.LifePart;
 import dk.sdu.mmmi.cbse.common.data.entityparts.MovingPart;
 import dk.sdu.mmmi.cbse.common.data.entityparts.PositionPart;
 import dk.sdu.mmmi.cbse.common.services.IEntityProcessingService;
 
-/**
- *
- * @author jcs
- */
-public class PlayerControlSystem implements IEntityProcessingService {
+import java.util.Random;
 
-    private BulletControlSystem bulletControlSystem = new BulletControlSystem();
-
+public class EnemyControlSystem implements IEntityProcessingService {
     @Override
     public void process(GameData gameData, World world) {
+        for (Entity enemy : world.getEntities(Enemy.class)) {
+            PositionPart positionPart = enemy.getPart(PositionPart.class);
+            MovingPart movingPart = enemy.getPart(MovingPart.class);
+            LifePart lifePart = enemy.getPart(LifePart.class);
 
-        for (Entity player : world.getEntities(Player.class)) {
-            PositionPart positionPart = player.getPart(PositionPart.class);
-            MovingPart movingPart = player.getPart(MovingPart.class);
-            LifePart lifePart = player.getPart(LifePart.class);
+            Random rand = new Random();
 
-            movingPart.setLeft(gameData.getKeys().isDown(LEFT));
-            movingPart.setRight(gameData.getKeys().isDown(RIGHT));
-            movingPart.setUp(gameData.getKeys().isDown(UP));
+            float rng = rand.nextFloat();
 
-            if (gameData.getKeys().isDown(GameKeys.SPACE)) {
-                System.out.println(lifePart.getLife());
-                world.addEntity(bulletControlSystem.createBullet(player, gameData));
+            if (rng > 0.1f && rng < 0.9f) {
+                movingPart.setUp(true);
             }
 
-            movingPart.process(gameData, player);
-            positionPart.process(gameData, player);
-            lifePart.process(gameData, player);
+            if (rng < 0.2f) {
+                movingPart.setLeft(true);
+            }
 
-            updateShape(player);
+            if (rng > 0.8f) {
+                movingPart.setRight(true);
+            }
+
+            movingPart.process(gameData, enemy);
+            positionPart.process(gameData, enemy);
+            lifePart.process(gameData, enemy);
+
+            updateShape(enemy);
+
+            movingPart.setRight(false);
+            movingPart.setLeft(false);
+            movingPart.setUp(false);
         }
     }
 
